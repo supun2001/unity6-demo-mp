@@ -128,7 +128,7 @@ namespace PlayerCharacterController
                 {
                     ""name"": ""up"",
                     ""id"": ""d8a25fa3-3ec9-4758-924c-edfe913e22ba"",
-                    ""path"": ""<Keyboard>/d"",
+                    ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -139,7 +139,7 @@ namespace PlayerCharacterController
                 {
                     ""name"": ""down"",
                     ""id"": ""711192c4-34e6-4cf1-9939-a2b6ca267f9a"",
-                    ""path"": ""<Keyboard>/a"",
+                    ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -150,7 +150,7 @@ namespace PlayerCharacterController
                 {
                     ""name"": ""left"",
                     ""id"": ""55f2859a-f9a7-4115-8cf0-fa0fb8573697"",
-                    ""path"": ""<Keyboard>/s"",
+                    ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -161,7 +161,7 @@ namespace PlayerCharacterController
                 {
                     ""name"": ""right"",
                     ""id"": ""ca4d2795-ef76-4b79-852f-9ebc43c3da5d"",
-                    ""path"": ""<Keyboard>/w"",
+                    ""path"": ""<Keyboard>/d"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
