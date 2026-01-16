@@ -1,0 +1,4 @@
+repository "mp-demo/mp-demo@18966772074145@cloud"
+  path "/"
+    br "/main"
+    co "/main"
