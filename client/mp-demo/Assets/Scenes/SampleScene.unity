@@ -309,7 +309,6 @@ GameObject:
   - component: {fileID: 231620412}
   - component: {fileID: 231620411}
   - component: {fileID: 231620410}
-  - component: {fileID: 231620413}
   - component: {fileID: 231620415}
   - component: {fileID: 231620414}
   m_Layer: 0
@@ -388,33 +387,11 @@ MonoBehaviour:
   _characterController: {fileID: 231620410}
   _playerCamera: {fileID: 330585545}
   runAcceleration: 50
-  runSpeed: 4
+  runSpeed: 7
   drag: 30
   lookSenseH: 0.1
   lookSenseV: 0.1
   lookLimitV: 70
---- !u!95 &231620413
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 231620408}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 89a7c80123613410087b1e766770a18c, type: 3}
-  m_Controller: {fileID: 9100000, guid: 80d21e4c707db427599ef7c691c0de71, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &231620414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -428,6 +405,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   _animator: {fileID: 1895689728}
+  rotationSpeed: 10
+  animationSmoothTime: 0.1
 --- !u!114 &231620415
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -440,7 +419,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c2d0204a4dc14360bcdddcd65ad68bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerState
-  <CurrentPlayerMovementState>k__BackingField: 1
+  <CurrentPlayerMovementState>k__BackingField: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1439,9 +1418,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5017971254852617305, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 445712794880070669, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 89a7c80123613410087b1e766770a18c, type: 3}
       propertyPath: m_Name
       value: character-d
+      objectReference: {fileID: 0}
+    - target: {fileID: 1492312403021943278, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1812433027226884373, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4436805663696350335, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0.081
+      objectReference: {fileID: 0}
+    - target: {fileID: 4436805663696350335, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 33.53
+      objectReference: {fileID: 0}
+    - target: {fileID: 4436805663696350335, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0.252
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 89a7c80123613410087b1e766770a18c, type: 3}
       propertyPath: m_Controller
@@ -1450,6 +1461,14 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 89a7c80123613410087b1e766770a18c, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7604367576434143486, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891244130364874969, guid: 89a7c80123613410087b1e766770a18c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
