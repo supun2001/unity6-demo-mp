@@ -57,6 +57,12 @@ public class NetworkManager : MonoBehaviour
         NetworkPlayer np = obj.AddComponent<NetworkPlayer>();
         np.Initialize(player, isLocal);
 
+        PlayerAppearance appearance = obj.GetComponent<PlayerAppearance>();
+        if (appearance != null)
+        {
+            appearance.Initialize(player);
+        }
+
         if (!isLocal)
         {
             var camera = obj.GetComponentInChildren<Camera>();

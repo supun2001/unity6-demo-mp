@@ -26,4 +26,7 @@ export class Player extends Schema {
     @type("string") sessionId: string = "";
     @type("number") timestamp: number = 0;
     @type("boolean") isReady: boolean = false;
+
+    // Skin
+    @type("number") skinIndex: number = 0;
 }

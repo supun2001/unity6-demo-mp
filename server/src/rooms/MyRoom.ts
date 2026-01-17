@@ -63,6 +63,13 @@ export class MyRoom extends Room<MyRoomState> {
     this.setSimulationInterval((deltaTime) =>
       this.update(deltaTime), 1000 / 60
     );
+
+    this.onMessage("setSkin", (client, skinIndex) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        player.skinIndex = skinIndex;
+      }
+    });
   }
 
   onJoin(client: Client, options: any) {

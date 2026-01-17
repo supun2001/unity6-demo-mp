@@ -22,6 +22,12 @@ public class LobbyUI : MonoBehaviour
     [Header("General")]
     public Camera lobbyCamera;
 
+    [Header("Skin Selection")]
+    public SkinRegistry skinRegistry;
+    public Image skinPreviewImage; 
+    public TextMeshProUGUI skinNameText; 
+    private int currentSkinIndex = 0;
+
     private void Start()
     {
         if (menuPanel != null)
@@ -43,6 +49,12 @@ public class LobbyUI : MonoBehaviour
         }
         
         if (lobbyCamera != null) lobbyCamera.gameObject.SetActive(true);
+
+        if (PlayerPrefs.HasKey("SelectedSkin"))
+        {
+            currentSkinIndex = PlayerPrefs.GetInt("SelectedSkin");
+        }
+        UpdateSkinUI();
     }
 
     private void Update()
@@ -69,6 +81,10 @@ public class LobbyUI : MonoBehaviour
     {
         if (createButton != null) createButton.interactable = false;
         await NetworkManager.Instance.CreateGame();
+        
+        // Sync Skin Immediately on Join
+        SaveAndSyncSkin();
+        
         if (createButton != null) createButton.interactable = true;
     }
 
@@ -85,6 +101,10 @@ public class LobbyUI : MonoBehaviour
 
         if (joinButton != null) joinButton.interactable = false;
         await NetworkManager.Instance.JoinGame(code);
+
+        // Sync Skin Immediately on Join
+        SaveAndSyncSkin();
+
         if (joinButton != null) joinButton.interactable = true;
     }
 
@@ -173,5 +193,56 @@ public class LobbyUI : MonoBehaviour
         
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+
+    // Skin Selection
+    public void OnNextSkinClicked()
+    {
+        if (skinRegistry == null || skinRegistry.skins.Length == 0) return;
+
+        currentSkinIndex = (currentSkinIndex + 1) % skinRegistry.skins.Length;
+        SaveAndSyncSkin();
+    }
+
+    public void OnPrevSkinClicked()
+    {
+        if (skinRegistry == null || skinRegistry.skins.Length == 0) return;
+
+        currentSkinIndex--;
+        if (currentSkinIndex < 0) currentSkinIndex = skinRegistry.skins.Length - 1;
+        SaveAndSyncSkin();
+    }
+
+    private void SaveAndSyncSkin()
+    {
+        PlayerPrefs.SetInt("SelectedSkin", currentSkinIndex);
+        PlayerPrefs.Save();
+       
+       UpdateSkinUI();
+
+       if (NetworkManager.Instance != null && NetworkManager.Instance.Room != null)
+       {
+           NetworkManager.Instance.Room.Send("setSkin", currentSkinIndex);
+       }
+    }
+
+    private void UpdateSkinUI()
+    {
+        if (skinRegistry == null || skinRegistry.skins.Length == 0) return;
+
+       if (currentSkinIndex >= skinRegistry.skins.Length) currentSkinIndex = 0;
+
+       if (skinPreviewImage != null)
+       {
+           Texture2D tex = skinRegistry.skins[currentSkinIndex];
+           Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+           skinPreviewImage.sprite = sprite;
+       }
+       
+       if (skinNameText != null)
+       {
+           skinNameText.text = $"Skin {currentSkinIndex + 1}";
+       }
     }
 }
