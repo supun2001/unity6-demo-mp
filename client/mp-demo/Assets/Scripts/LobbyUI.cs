@@ -4,6 +4,7 @@ using TMPro;
 
 public class LobbyUI : MonoBehaviour
 {
+    #region Class Variables
     [Header("Menu UI")]
     public GameObject menuPanel;
     public TMP_InputField joinCodeInput;
@@ -27,7 +28,9 @@ public class LobbyUI : MonoBehaviour
     public Image skinPreviewImage; 
     public TextMeshProUGUI skinNameText; 
     private int currentSkinIndex = 0;
+    #endregion
 
+    #region Class Methods
     private void Start()
     {
         if (menuPanel != null)
@@ -90,7 +93,9 @@ public class LobbyUI : MonoBehaviour
             NetworkManager.Instance.OnPlayerRemovedEvent -= OnPlayerListChanged;
         }
     }
+    #endregion
 
+    #region Switch UI to HUD
     private void SwitchToHUD()
     {
         menuPanel.SetActive(false);
@@ -126,7 +131,9 @@ public class LobbyUI : MonoBehaviour
             UpdateLobbyUI();
         }
     }
+    #endregion
 
+    #region Button Clicks
     private void OnPlayerListChanged(string id, Player player)
     {
         UpdateLobbyUI();
@@ -299,4 +306,5 @@ public class LobbyUI : MonoBehaviour
            }
        }
     }
+    #endregion
 }
