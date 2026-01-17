@@ -44,13 +44,11 @@ public class PlayerLocomotionInput : MonoBehaviour,
     public void OnMovement(InputAction.CallbackContext context)
     {
         MovementInput = context.ReadValue<Vector2>();
-        Debug.Log($"Movement: {MovementInput}");
     }
 
     public void OnLook(InputAction.CallbackContext context)
     {
         LookInput = context.ReadValue<Vector2>();
-        Debug.Log($"Look: {LookInput}");
     }
 
     public void OnJump(InputAction.CallbackContext context)

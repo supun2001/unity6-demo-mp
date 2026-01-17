@@ -5,6 +5,7 @@ using System;
 [DefaultExecutionOrder(-1)]
 public class PlayerController : MonoBehaviour
 {
+    #region Class Variables
     [Header("Components")]
     [SerializeField] private CharacterController _characterController;
     [SerializeField] private Camera _playerCamera;
@@ -22,81 +23,123 @@ public class PlayerController : MonoBehaviour
     public float lookLimitV = 89f;
 
     private PlayerLocomotionInput _playerLocomotionInput;
+    private Transform _transform;
+    private Transform _cameraTransform;
+    
     private Vector2 _cameraRotation = Vector2.zero;
-    private Vector2 _playerTargetRotation = Vector2.zero;
+    private float _playerRotationY = 0f;
     private float _verticalVelocity = 0f;
     private Vector3 _horizontalVelocity = Vector3.zero;
+    
+    private float _dragSqr;
+    private const float JUMP_VELOCITY_MULTIPLIER = 3f;
+    #endregion
 
+    #region Setup
     private void Awake() {
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+        _transform = transform;
+        _cameraTransform = _playerCamera.transform;
     }
-
+    
     private void Start() {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
+        _dragSqr = drag * drag;
     }
+    #endregion
 
+    #region Update
     private void Update() {
         HandleVerticalMovement();
         HandleHorizontalMovement();
 
-        // Combine horizontal and vertical velocity
         Vector3 finalVelocity = _horizontalVelocity;
         finalVelocity.y = _verticalVelocity;
 
-        // Move the character
         _characterController.Move(finalVelocity * Time.deltaTime);
     }
 
-    private void HandleHorizontalMovement() {
-        // Get camera-relative directions
-        Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
-        Vector3 cameraRightXZ = new Vector3(_playerCamera.transform.right.x, 0f, _playerCamera.transform.right.z).normalized;
+    private void LateUpdate() {
+        Vector2 lookInput = _playerLocomotionInput.LookInput;
         
-        // MovementInput.y = forward/back (W/S), MovementInput.x = left/right (A/D)
-        Vector3 movementDirection = cameraForwardXZ * _playerLocomotionInput.MovementInput.y + cameraRightXZ * _playerLocomotionInput.MovementInput.x;
+        // Update camera rotation
+        _cameraRotation.x += lookSenseH * lookInput.x;
+        _cameraRotation.y = Mathf.Clamp(_cameraRotation.y + lookSenseV * lookInput.y, -lookLimitV, lookLimitV);
+        
+        _playerRotationY += lookSenseH * lookInput.x;
+        _transform.rotation = Quaternion.Euler(0f, _playerRotationY, 0f);
+
+        _cameraTransform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
+    }
+    #endregion
+
+    #region Movement
+    private void HandleHorizontalMovement() {
+        Vector2 movementInput = _playerLocomotionInput.MovementInput;
+        
+        if (movementInput.sqrMagnitude < 0.001f && _horizontalVelocity.sqrMagnitude < 0.001f) {
+            _horizontalVelocity = Vector3.zero;
+            return;
+        }
+        
+        Vector3 cameraForward = _cameraTransform.forward;
+        Vector3 cameraRight = _cameraTransform.right;
+        
+        Vector3 cameraForwardXZ = new Vector3(cameraForward.x, 0f, cameraForward.z).normalized;
+        Vector3 cameraRightXZ = new Vector3(cameraRight.x, 0f, cameraRight.z).normalized;
+        
+        Vector3 movementDirection = cameraForwardXZ * movementInput.y + cameraRightXZ * movementInput.x;
 
         // Apply acceleration
-        Vector3 movementDelta = movementDirection * runAcceleration * Time.deltaTime;
+        float deltaTime = Time.deltaTime;
+        Vector3 movementDelta = movementDirection * runAcceleration * deltaTime;
         _horizontalVelocity += movementDelta;
 
-        // Apply drag
-        Vector3 currentDrag = _horizontalVelocity.normalized * drag * Time.deltaTime;
-        _horizontalVelocity = (_horizontalVelocity.magnitude > drag * Time.deltaTime) ? _horizontalVelocity - currentDrag : Vector3.zero;
+        // Apply drag (optimized with sqrMagnitude to avoid sqrt)
+        float dragThreshold = drag * deltaTime;
+        float velocitySqrMag = _horizontalVelocity.sqrMagnitude;
         
-        // Clamp to max speed
+        if (velocitySqrMag > dragThreshold * dragThreshold) {
+            Vector3 currentDrag = _horizontalVelocity.normalized * dragThreshold;
+            _horizontalVelocity -= currentDrag;
+        } else {
+            _horizontalVelocity = Vector3.zero;
+        }
+        
         _horizontalVelocity = Vector3.ClampMagnitude(_horizontalVelocity, runSpeed);
         
-        // Keep it horizontal (zero out Y component)
         _horizontalVelocity.y = 0f;
     }
+    #endregion
 
-    private void LateUpdate() {
-        _cameraRotation.x += lookSenseH * _playerLocomotionInput.LookInput.x;
-        _cameraRotation.y = Mathf.Clamp(_cameraRotation.y + lookSenseV * _playerLocomotionInput.LookInput.y, -lookLimitV, lookLimitV);
+    #region Vertical Movement
+    private void HandleVerticalMovement()
+    {
+        bool isGrounded = IsGrounded();
+        float deltaTime = Time.deltaTime;
         
-        _playerTargetRotation.x += transform.eulerAngles.x + lookSenseH * _playerLocomotionInput.LookInput.x;
-        transform.rotation = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
+        if (isGrounded && _verticalVelocity < 0f){
+            _verticalVelocity = 0f;
+        }
+        
+        _verticalVelocity -= gravity * deltaTime;
 
-        _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
+        if(_playerLocomotionInput.JumpPressed && isGrounded){
+            _verticalVelocity += MathF.Sqrt(jumpForce * JUMP_VELOCITY_MULTIPLIER * gravity);
+        }
     }
 
     public bool IsGrounded() {
         return _characterController.isGrounded;   
     }
+    #endregion
 
-    private void HandleVerticalMovement()
+    // In PlayerController.cs
+    public Vector3 GetVelocity()
     {
-        if (IsGrounded() && _verticalVelocity < 0){
-            _verticalVelocity = 0f;
-        }
-        _verticalVelocity -= gravity * Time.deltaTime;
-
-        if(_playerLocomotionInput.JumpPressed && IsGrounded()){
-            _verticalVelocity += MathF.Sqrt(jumpForce * 3 * gravity);
-        }
-        
+        // Combine your existing private velocity fields
+        return _horizontalVelocity + Vector3.up * _verticalVelocity;
     }
-
-
 }
