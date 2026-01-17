@@ -7,7 +7,10 @@ export class MyRoom extends Room<MyRoomState> {
   state = new MyRoomState();
 
   onCreate(options: any) {
-    console.log("Room created!", options);
+
+    //Room ID
+    this.roomId = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log("Room created!", options, "ID:", this.roomId);
 
     //Handle player movement
     this.onMessage("playerUpdate", (client, message) => {
@@ -36,6 +39,24 @@ export class MyRoom extends Room<MyRoomState> {
       player.cameraRotationY = message.cameraRotationY;
 
       player.timestamp = Date.now();
+    });
+
+    this.onMessage("playerReady", (client, isReady) => {
+      const player = this.state.players.get(client.sessionId);
+      if (player) {
+        player.isReady = isReady;
+
+        // Check if all players are ready
+        let allReady = true;
+        this.state.players.forEach((p) => {
+          if (!p.isReady) allReady = false;
+        });
+
+        if (allReady && this.state.players.size > 0) {
+          this.broadcast("startGame");
+          this.lock();
+        }
+      }
     });
 
     //Set update rate (60 times per second)

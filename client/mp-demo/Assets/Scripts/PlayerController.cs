@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using PlayerCharacterController;
 using System;
 
@@ -43,8 +45,8 @@ public class PlayerController : MonoBehaviour
     }
     
     private void Start() {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
         
         _dragSqr = drag * drag;
     }
@@ -52,6 +54,7 @@ public class PlayerController : MonoBehaviour
 
     #region Update
     private void Update() {
+        HandleCursorLock();
         HandleVerticalMovement();
         HandleHorizontalMovement();
 
@@ -59,6 +62,29 @@ public class PlayerController : MonoBehaviour
         finalVelocity.y = _verticalVelocity;
 
         _characterController.Move(finalVelocity * Time.deltaTime);
+    }
+    
+    private void HandleCursorLock()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // Only lock if we are NOT clicking on a UI element
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
+            if (Cursor.lockState == CursorLockMode.None)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
     }
 
     private void LateUpdate() {
@@ -97,7 +123,7 @@ public class PlayerController : MonoBehaviour
         Vector3 movementDelta = movementDirection * runAcceleration * deltaTime;
         _horizontalVelocity += movementDelta;
 
-        // Apply drag (optimized with sqrMagnitude to avoid sqrt)
+        // Apply drag
         float dragThreshold = drag * deltaTime;
         float velocitySqrMag = _horizontalVelocity.sqrMagnitude;
         
@@ -136,10 +162,8 @@ public class PlayerController : MonoBehaviour
     }
     #endregion
 
-    // In PlayerController.cs
     public Vector3 GetVelocity()
     {
-        // Combine your existing private velocity fields
         return _horizontalVelocity + Vector3.up * _verticalVelocity;
     }
 }

@@ -3,7 +3,6 @@ using Colyseus;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Colyseus.Schema;
-
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance;
@@ -11,9 +10,11 @@ public class NetworkManager : MonoBehaviour
     public string serverUrl = "ws://localhost:2567";
     public string roomName = "my_room";
     public GameObject playerPrefab; 
+    public string currentRoomId { get; private set; } 
 
     private ColyseusClient client;
     private ColyseusRoom<MyRoomState> room;
+    public ColyseusRoom<MyRoomState> Room => room;
     private Dictionary<string, GameObject> players = new Dictionary<string, GameObject>();
 
     private void Awake() 
@@ -30,25 +31,24 @@ public class NetworkManager : MonoBehaviour
     private async void Start()
     {
         client = new ColyseusClient(serverUrl);
-        try
-        {
-            room = await client.JoinOrCreate<MyRoomState>(roomName);
-            Debug.Log($"Connected with ID: {room.SessionId}");
+        // try
+        // {
+        //     room = await client.JoinOrCreate<MyRoomState>(roomName);
+        //     Debug.Log($"Connected with ID: {room.SessionId}");
 
 
-            // Listen for player additions using Callbacks strategy (required for SDK 0.16+)
-            room.OnStateChange += OnStateChange;
+        //     room.OnStateChange += OnStateChange;
             
-            var events = Colyseus.Schema.Callbacks.Get(room);
-            events.OnAdd(state => state.players, (key, player) => OnPlayerAdded(key, player));
-            events.OnRemove(state => state.players, (key, player) => OnPlayerRemoved(key, player));
-        }
-        catch (System.Exception e) { Debug.LogError(e.Message); }
+        //     var events = Colyseus.Schema.Callbacks.Get(room);
+        //     events.OnAdd(state => state.players, (key, player) => OnPlayerAdded(key, player));
+        //     events.OnRemove(state => state.players, (key, player) => OnPlayerRemoved(key, player));
+        // }
+        // catch (System.Exception e) { Debug.LogError(e.Message); }
     }
 
     private void OnPlayerAdded(string id, Player player)
     {
-        Debug.Log($"🎮 Player added: {id}");
+        Debug.Log($"Player added: {id}");
         Vector3 pos = new Vector3(player.x, player.y, player.z);
         GameObject obj = Instantiate(playerPrefab, pos, Quaternion.identity);
         
@@ -105,4 +105,64 @@ public class NetworkManager : MonoBehaviour
             cameraRotationX = camRot.x, cameraRotationY = camRot.y
         });
     }
+
+    public void SendReadyState(bool isReady)
+    {
+        if (room == null) return;
+        room.Send("playerReady", isReady);
+    }
+
+    public async Task CreateGame(){
+        InitializeClient();
+        try{
+            room = await client.JoinOrCreate<MyRoomState>(roomName);
+            OnRoomJoined();
+
+        }catch(System.Exception e){
+            Debug.LogError($"Matchmaking Failed: {e.Message}");
+        }
+        
+    }
+
+    public async Task JoinGame(string targetRoomId)
+    {
+        InitializeClient();
+        try
+        {
+            room = await client.JoinById<MyRoomState>(targetRoomId);
+            OnRoomJoined();
+        }
+        catch (System.Exception e) { Debug.LogError($"Join Failed: {e.Message}"); }
+    }
+
+    private void InitializeClient()
+    {
+        if (client == null) client = new ColyseusClient(serverUrl);
+    }
+
+    private void OnRoomJoined()
+    {
+        currentRoomId = room.RoomId;
+        Debug.Log($"Connected! Room ID: {currentRoomId}");
+        
+        // Setup Handlers 
+        room.OnStateChange += OnStateChange;
+        
+        // Listen for Start Game
+        room.OnMessage<string>("startGame", (message) => {
+            Debug.Log("Game Started!");
+            
+            // Notify LobbyUI to hide HUD
+            LobbyUI lobby = FindObjectOfType<LobbyUI>();
+            if (lobby != null)
+            {
+                lobby.OnGameStarted();
+            }
+        });
+
+        var events = Colyseus.Schema.Callbacks.Get(room);
+        events.OnAdd(state => state.players, (key, player) => OnPlayerAdded(key, player));
+        events.OnRemove(state => state.players, (key, player) => OnPlayerRemoved(key, player));
+    }
+
 }

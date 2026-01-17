@@ -59,5 +59,8 @@ public Player() { }
 
 	[Type(14, "number")]
 	public float timestamp = default(float);
+
+	[Type(15, "boolean")]
+	public bool isReady = default(bool);
 }
 
