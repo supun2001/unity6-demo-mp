@@ -31,20 +31,10 @@ public class NetworkManager : MonoBehaviour
     private async void Start()
     {
         client = new ColyseusClient(serverUrl);
-        // try
-        // {
-        //     room = await client.JoinOrCreate<MyRoomState>(roomName);
-        //     Debug.Log($"Connected with ID: {room.SessionId}");
-
-
-        //     room.OnStateChange += OnStateChange;
-            
-        //     var events = Colyseus.Schema.Callbacks.Get(room);
-        //     events.OnAdd(state => state.players, (key, player) => OnPlayerAdded(key, player));
-        //     events.OnRemove(state => state.players, (key, player) => OnPlayerRemoved(key, player));
-        // }
-        // catch (System.Exception e) { Debug.LogError(e.Message); }
     }
+
+    public System.Action<string, Player> OnPlayerAddedEvent;
+    public System.Action<string, Player> OnPlayerRemovedEvent;
 
     private void OnPlayerAdded(string id, Player player)
     {
@@ -82,6 +72,8 @@ public class NetworkManager : MonoBehaviour
         }
 
         players.Add(id, obj);
+        
+        OnPlayerAddedEvent?.Invoke(id, player);
     }
 
     private void OnPlayerRemoved(string id, Player player)
@@ -91,6 +83,7 @@ public class NetworkManager : MonoBehaviour
             Destroy(players[id]);
             players.Remove(id);
         }
+        OnPlayerRemovedEvent?.Invoke(id, player);
     }
 
     private void OnStateChange(MyRoomState state, bool isFirstState)

@@ -39,11 +39,18 @@ public class NetworkPlayer : MonoBehaviour
         }
     }
 
+    private float nextSendTime = 0f;
+    public float sendInterval = 0.05f; // 20 times per second
+
     private void Update()
     {
         if (isLocal)
         {
-            SendLocalState();
+            if (Time.time >= nextSendTime)
+            {
+                SendLocalState();
+                nextSendTime = Time.time + sendInterval;
+            }
         }
         else
         {

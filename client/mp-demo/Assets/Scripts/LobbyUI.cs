@@ -72,9 +72,69 @@ public class LobbyUI : MonoBehaviour
                 {
                     roomIdText.text = $"Room Code: {NetworkManager.Instance.currentRoomId}";
                 }
-                UpdateLobbyUI();
+                // UpdateLobbyUI is now event-driven
             }
         }
+    }
+    
+    private void OnDestroy()
+    {
+        if (NetworkManager.Instance != null && NetworkManager.Instance.Room != null)
+        {
+             NetworkManager.Instance.Room.OnStateChange -= OnLobbyStateChange;
+        }
+        
+        if (NetworkManager.Instance != null)
+        {
+            NetworkManager.Instance.OnPlayerAddedEvent -= OnPlayerListChanged;
+            NetworkManager.Instance.OnPlayerRemovedEvent -= OnPlayerListChanged;
+        }
+    }
+
+    private void SwitchToHUD()
+    {
+        menuPanel.SetActive(false);
+        hudPanel.SetActive(true);
+        
+        if (roomIdText != null)
+        {
+            roomIdText.text = $"{NetworkManager.Instance.currentRoomId}";
+            Debug.Log($"Setting Room Code Text to: {roomIdText.text}");
+        }
+        else
+        {
+            Debug.LogError("LobbyUI: Room ID Text (TMP) is not assigned in the Inspector!");
+        }
+        
+        if (lobbyCamera != null) lobbyCamera.gameObject.SetActive(false);
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        // Subscribe to state changes for UI updates
+        if (NetworkManager.Instance != null)
+        {
+            if (NetworkManager.Instance.Room != null)
+            {
+                NetworkManager.Instance.Room.OnStateChange += OnLobbyStateChange;
+            }
+            
+            NetworkManager.Instance.OnPlayerAddedEvent += OnPlayerListChanged;
+            NetworkManager.Instance.OnPlayerRemovedEvent += OnPlayerListChanged;
+
+            // Force initial update
+            UpdateLobbyUI();
+        }
+    }
+
+    private void OnPlayerListChanged(string id, Player player)
+    {
+        UpdateLobbyUI();
+    }
+
+    private void OnLobbyStateChange(MyRoomState state, bool isFirstState)
+    {
+        UpdateLobbyUI();
     }
 
     public async void OnCreateClicked()
@@ -174,26 +234,7 @@ public class LobbyUI : MonoBehaviour
         Cursor.visible = false;
     }
 
-    private void SwitchToHUD()
-    {
-        menuPanel.SetActive(false);
-        hudPanel.SetActive(true);
-        
-        if (roomIdText != null)
-        {
-            roomIdText.text = $"{NetworkManager.Instance.currentRoomId}";
-            Debug.Log($"Setting Room Code Text to: {roomIdText.text}");
-        }
-        else
-        {
-            Debug.LogError("LobbyUI: Room ID Text (TMP) is not assigned in the Inspector!");
-        }
-        
-        if (lobbyCamera != null) lobbyCamera.gameObject.SetActive(false);
-        
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
+
 
 
     // Skin Selection
@@ -233,16 +274,29 @@ public class LobbyUI : MonoBehaviour
 
        if (currentSkinIndex >= skinRegistry.skins.Length) currentSkinIndex = 0;
 
+       // Get the current skin entry
+       var skinEntry = skinRegistry.skins[currentSkinIndex];
+
        if (skinPreviewImage != null)
        {
-           Texture2D tex = skinRegistry.skins[currentSkinIndex];
-           Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-           skinPreviewImage.sprite = sprite;
+           // Use the distinct UI preview sprite if available, otherwise fallback or leave null
+           if (skinEntry.uiPreview != null)
+           {
+               skinPreviewImage.sprite = skinEntry.uiPreview;
+           }
        }
        
        if (skinNameText != null)
        {
-           skinNameText.text = $"Skin {currentSkinIndex + 1}";
+           // Use the custom name if set, otherwise default to "Skin X"
+           if (!string.IsNullOrEmpty(skinEntry.skinName))
+           {
+               skinNameText.text = skinEntry.skinName;
+           }
+           else
+           {
+               skinNameText.text = $"Skin {currentSkinIndex + 1}";
+           }
        }
     }
 }

@@ -41,7 +41,8 @@ public class PlayerAppearance : MonoBehaviour
             {
                 if (renderer != null)
                 {
-                    renderer.material.mainTexture = skinRegistry.skins[index];
+                    // Access the .texture property from the SkinEntry struct
+                    renderer.material.mainTexture = skinRegistry.skins[index].texture;
                 }
             }
         }
