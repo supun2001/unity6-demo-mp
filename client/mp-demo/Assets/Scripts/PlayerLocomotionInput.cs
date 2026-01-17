@@ -6,9 +6,14 @@ using PlayerCharacterController;
 public class PlayerLocomotionInput : MonoBehaviour,
     PlayerControls.IPlayerLocomotionMapActions
 {
+    #region  Class Variables
     public PlayerControls Controls { get; private set; }
     public Vector2 MovementInput { get; private set; }
     public Vector2 LookInput { get; private set; }
+    public bool JumpPressed { get; private set; }
+    #endregion
+
+    #region Setup
 
     private void OnEnable()
     {
@@ -24,6 +29,18 @@ public class PlayerLocomotionInput : MonoBehaviour,
         Controls.PlayerLocomotionMap.Disable();
     }
 
+    #endregion
+
+    #region Late Update
+
+    private void LateUpdate() {
+        JumpPressed = false;
+    }
+
+    #endregion
+
+    #region Input Actions
+
     public void OnMovement(InputAction.CallbackContext context)
     {
         MovementInput = context.ReadValue<Vector2>();
@@ -35,4 +52,18 @@ public class PlayerLocomotionInput : MonoBehaviour,
         LookInput = context.ReadValue<Vector2>();
         Debug.Log($"Look: {LookInput}");
     }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (!context.performed)
+        {
+            return;
+        }
+
+        JumpPressed = true;
+    }
+
+ 
+
+    #endregion
 }

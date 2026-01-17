@@ -7,16 +7,19 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private float animationSmoothTime = 0.1f; 
     
     private PlayerLocomotionInput _playerLocomotionInput;
+    private PlayerController _playerController;
 
     private static int _inputXHash = Animator.StringToHash("inputX");
     private static int _inputYHash = Animator.StringToHash("inputY");
+    private static int _groundedHash = Animator.StringToHash("IsGrounded");
+    private static int _jumpHash = Animator.StringToHash("IsJumping");
 
     private float _currentInputX = 0f;
     private float _currentInputY = 0f;
 
     private void Awake() {
         _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
-    
+        _playerController = GetComponent<PlayerController>();
     }
 
     private void Update() {
@@ -26,6 +29,8 @@ public class PlayerAnimation : MonoBehaviour
     private void UpdateAnimation() {
         Vector2 input = _playerLocomotionInput.MovementInput;
 
+
+
         // Smoothly interpolate animation values
         float smoothSpeed = animationSmoothTime > 0 ? 1f / animationSmoothTime : 10f;
         _currentInputX = Mathf.Lerp(_currentInputX, input.x, smoothSpeed * Time.deltaTime);
@@ -34,5 +39,8 @@ public class PlayerAnimation : MonoBehaviour
         // Set smoothed values to animator
         _animator.SetFloat(_inputXHash, _currentInputX);
         _animator.SetFloat(_inputYHash, _currentInputY);
+
+        _animator.SetBool(_groundedHash, _playerController.IsGrounded());
+        _animator.SetBool(_jumpHash, _playerLocomotionInput.JumpPressed);
     }
 }
