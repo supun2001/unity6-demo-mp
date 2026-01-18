@@ -181,4 +181,31 @@ public class NetworkManager : MonoBehaviour
         events.OnRemove(state => state.players, (key, player) => OnPlayerRemoved(key, player));
     }
 
+    private async void OnApplicationQuit()
+    {
+        await LeaveGame();
+    }
+
+    public async Task LeaveGame()
+    {
+        if (room != null)
+        {
+            try 
+            {
+               await room.Leave(true);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Error leaving room: {e.Message}");
+            }
+            finally
+            {
+                room = null;
+                currentRoomId = "";
+                // Clear players
+                foreach(var p in players.Values) Destroy(p);
+                players.Clear();
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 
 public class LobbyUI : MonoBehaviour
@@ -62,7 +63,7 @@ public class LobbyUI : MonoBehaviour
 
     private void Update()
     {
-        if (NetworkManager.Instance != null && NetworkManager.Instance.currentRoomId != null)
+        if (NetworkManager.Instance != null && !string.IsNullOrEmpty(NetworkManager.Instance.currentRoomId))
         {
             if (menuPanel.activeSelf)
             {
@@ -75,7 +76,15 @@ public class LobbyUI : MonoBehaviour
                 {
                     roomIdText.text = $"Room Code: {NetworkManager.Instance.currentRoomId}";
                 }
-                // UpdateLobbyUI is now event-driven
+            }
+        }
+        
+        // Handle ESC to leave
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            if (NetworkManager.Instance != null && NetworkManager.Instance.Room != null)
+            {
+                LeaveRoom();
             }
         }
     }
@@ -95,6 +104,47 @@ public class LobbyUI : MonoBehaviour
     }
     #endregion
 
+    public async void LeaveRoom()
+    {
+        if (NetworkManager.Instance != null)
+        {
+            await NetworkManager.Instance.LeaveGame();
+        }
+        
+        SwitchToMenu();
+    }
+
+    private void SwitchToMenu()
+    {
+        menuPanel.SetActive(true);
+        hudPanel.SetActive(false);
+        
+        if (lobbyCamera != null) lobbyCamera.gameObject.SetActive(true);
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        // Unsubscribe from events to prevent duplicates
+        if (NetworkManager.Instance != null)
+        {
+            NetworkManager.Instance.OnPlayerAddedEvent -= OnPlayerListChanged;
+            NetworkManager.Instance.OnPlayerRemovedEvent -= OnPlayerListChanged;
+        }
+
+        // Reset Ready State
+        isReady = false;
+        if (readyButtonText != null) readyButtonText.text = "READY";
+        if (readyButton != null) 
+        {
+             ColorUtility.TryParseHtmlString("#33B46E", out Color notReadyColor);
+             readyButton.image.color = notReadyColor;
+        }
+        
+        if (joinButton != null) joinButton.interactable = true;
+        if (createButton != null) createButton.interactable = true;
+    }
+
+    
     #region Switch UI to HUD
     private void SwitchToHUD()
     {
@@ -187,15 +237,16 @@ public class LobbyUI : MonoBehaviour
 
         if (readyButton != null)
         {
+            ColorUtility.TryParseHtmlString("#33B46E", out Color notReadyColor); 
+            ColorUtility.TryParseHtmlString("#CCCC2D", out Color readyColor);
+
             if (isReady)
             {
-                ColorUtility.TryParseHtmlString("#33B46E", out Color notReadyColor); 
-                ColorUtility.TryParseHtmlString("#CCCC2D", out Color readyColor);
                 readyButton.image.color = readyColor; 
             }
             else
             {
-                 readyButton.image.color = Color.white;
+                 readyButton.image.color = notReadyColor;
             }
         }
         
