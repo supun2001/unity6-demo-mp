@@ -7,7 +7,24 @@ public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance;
     
-    public string serverUrl = "ws://localhost:2567";
+    [Header("Network Configuration")]
+    [Tooltip("Local development server URL")]
+    [SerializeField] private string localServerUrl = "ws://localhost:2567";
+
+    [Tooltip("Production server URL (Render/Railway). Must use wss:// for WebGL.")]
+    [SerializeField] private string productionServerUrl = "wss://YOUR-SERVER-URL.onrender.com";
+
+    public string serverUrl 
+    {
+        get 
+        {
+            #if UNITY_EDITOR
+                return localServerUrl;
+            #else
+                return productionServerUrl;
+            #endif
+        }
+    }
     public string roomName = "my_room";
     public GameObject playerPrefab; 
     public string currentRoomId { get; private set; } 
