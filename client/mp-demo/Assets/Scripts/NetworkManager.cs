@@ -12,7 +12,7 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private string localServerUrl = "ws://localhost:2567";
 
     [Tooltip("Production server URL (Render/Railway). Must use wss:// for WebGL.")]
-    [SerializeField] private string productionServerUrl = "wss://YOUR-SERVER-URL.onrender.com";
+    [SerializeField] private string productionServerUrl = "wss://unity6-demo-mp.onrender.com";
 
     public string serverUrl 
     {
