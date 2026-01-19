@@ -47,6 +47,7 @@ public class NetworkManager : MonoBehaviour
 
     private async void Start()
     {
+        Debug.Log($"NetworkManager: Initializing with Server URL: {serverUrl}");
         client = new ColyseusClient(serverUrl);
     }
 
@@ -113,14 +114,24 @@ public class NetworkManager : MonoBehaviour
     {
         if (room == null) return;
         
-        room.Send("playerUpdate", new {
-            x = pos.x, y = pos.y, z = pos.z,
+        PlayerUpdateMessage msg = new PlayerUpdateMessage
+        {
+            x = pos.x,
+            y = pos.y,
+            z = pos.z,
             rotationY = rotY,
-            velocityX = vel.x, velocityY = vel.y, velocityZ = vel.z,
-            animInputX = aX, animInputY = aY,
-            isGrounded = g, isJumping = j,
-            cameraRotationX = camRot.x, cameraRotationY = camRot.y
-        });
+            velocityX = vel.x,
+            velocityY = vel.y,
+            velocityZ = vel.z,
+            animInputX = aX,
+            animInputY = aY,
+            isGrounded = g,
+            isJumping = j,
+            cameraRotationX = camRot.x,
+            cameraRotationY = camRot.y
+        };
+
+        room.Send("playerUpdate", msg);
     }
 
     public void SendReadyState(bool isReady)

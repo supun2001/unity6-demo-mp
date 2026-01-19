@@ -116,10 +116,10 @@ public class NetworkPlayer : MonoBehaviour
         if (animator)
         {
             // Debugging Sync
-            if (Mathf.Abs(playerState.animInputX) > 0.1f || Mathf.Abs(playerState.animInputY) > 0.1f)
-            {
-               Debug.Log($"Remote Anim: Target({playerState.animInputX:F2}, {playerState.animInputY:F2}) -> Smooth({_remoteAnimX:F2}, {_remoteAnimY:F2})");
-            }
+            // if (Mathf.Abs(playerState.animInputX) > 0.1f || Mathf.Abs(playerState.animInputY) > 0.1f)
+            // {
+            //    Debug.Log($"Remote Anim: Target({playerState.animInputX:F2}, {playerState.animInputY:F2})");
+            // }
 
             // Smoothly interpolate the values locally
             _remoteAnimX = Mathf.Lerp(_remoteAnimX, playerState.animInputX, Time.deltaTime * lerpSpeed);
