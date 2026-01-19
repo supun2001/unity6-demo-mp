@@ -61,7 +61,8 @@ public class NetworkManager : MonoBehaviour
         
         bool isLocal = id == room.SessionId;
         
-        NetworkPlayer np = obj.AddComponent<NetworkPlayer>();
+        NetworkPlayer np = obj.GetComponent<NetworkPlayer>();
+        if (np == null) np = obj.AddComponent<NetworkPlayer>();
         np.Initialize(player, isLocal);
 
         PlayerAppearance appearance = obj.GetComponent<PlayerAppearance>();
@@ -131,7 +132,7 @@ public class NetworkManager : MonoBehaviour
     public async Task CreateGame(){
         InitializeClient();
         try{
-            room = await client.JoinOrCreate<MyRoomState>(roomName);
+            room = await client.Create<MyRoomState>(roomName);
             OnRoomJoined();
 
         }catch(System.Exception e){

@@ -4,6 +4,7 @@ public class PlayerAnimation : MonoBehaviour
 {
     #region Class Variables
     [SerializeField] private Animator _animator;
+    public Animator Animator => _animator;
     [SerializeField] private float rotationSpeed = 10f; 
     [SerializeField] private float animationSmoothTime = 0.1f; 
     
