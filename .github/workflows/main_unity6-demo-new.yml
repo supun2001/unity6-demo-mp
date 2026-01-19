@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x' # Changed to 20.x (Current LTS) as 24.x is unstable/future
+          node-version: '24.x' # Changed to 20.x (Current LTS) as 24.x is unstable/future
 
       - name: npm install, build, and test
         working-directory: ./server    # <--- CRITICAL FIX 1: Point to server folder
@@ -63,3 +63,4 @@ jobs:
           app-name: 'unity6-demo-new'
           slot-name: 'Production'
           package: .
+
