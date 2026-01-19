@@ -77,14 +77,13 @@ public class LobbyUI : MonoBehaviour
                     roomIdText.text = $"Room Code: {NetworkManager.Instance.currentRoomId}";
                 }
             }
-        }
-        
-        // Handle ESC to leave
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            if (NetworkManager.Instance != null && NetworkManager.Instance.Room != null)
+            // Allow ESC to leave ONLY when Game Started (HUD is hidden) and NOT in Menu
+            else if (!menuPanel.activeSelf) 
             {
-                LeaveRoom();
+                if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+                {
+                    LeaveRoom();
+                }
             }
         }
     }
@@ -179,6 +178,9 @@ public class LobbyUI : MonoBehaviour
 
             // Force initial update
             UpdateLobbyUI();
+
+            // Disable player input while in lobby (waiting to ready up)
+            SetLocalPlayerInput(false);
         }
     }
     #endregion
@@ -187,6 +189,24 @@ public class LobbyUI : MonoBehaviour
     private void OnPlayerListChanged(string id, Player player)
     {
         UpdateLobbyUI();
+
+        // If the added player is the local player, enforce the input state
+        if (NetworkManager.Instance != null && NetworkManager.Instance.Room != null)
+        {
+            if (id == NetworkManager.Instance.Room.SessionId)
+            {
+                // If HUD is active, rely on Ready state. If HUD is off (game started), enable movement.
+                bool shouldMove = !hudPanel.activeSelf || isReady;
+                SetLocalPlayerInput(shouldMove);
+                
+                // Also update cursor state if this is the initial spawn
+                if (shouldMove)
+                {
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                }
+            }
+        }
     }
 
     private void OnLobbyStateChange(MyRoomState state, bool isFirstState)
@@ -251,6 +271,20 @@ public class LobbyUI : MonoBehaviour
         }
         
         NetworkManager.Instance.SendReadyState(isReady);
+        
+        // Toggle input and cursor based on Ready state
+        SetLocalPlayerInput(isReady);
+        
+        if (isReady)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
     private void UpdateLobbyUI()
@@ -290,6 +324,22 @@ public class LobbyUI : MonoBehaviour
         // Lock cursor for gameplay
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
+        // Ensure movement is enabled
+        SetLocalPlayerInput(true);
+    }
+
+    private void SetLocalPlayerInput(bool enabled)
+    {
+        GameObject localPlayer = GameObject.Find("LocalPlayer");
+        if (localPlayer != null)
+        {
+            var input = localPlayer.GetComponent<PlayerLocomotionInput>();
+            if (input != null)
+            {
+                input.InputEnabled = enabled;
+            }
+        }
     }
 
 

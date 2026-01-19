@@ -41,19 +41,31 @@ public class PlayerLocomotionInput : MonoBehaviour,
 
     #region Input Actions
 
+    public bool InputEnabled = true;
+
     public void OnMovement(InputAction.CallbackContext context)
     {
+        if (!InputEnabled)
+        {
+            MovementInput = Vector2.zero;
+            return;
+        }
         MovementInput = context.ReadValue<Vector2>();
     }
 
     public void OnLook(InputAction.CallbackContext context)
     {
+        if (!InputEnabled)
+        {
+            LookInput = Vector2.zero;
+            return;
+        }
         LookInput = context.ReadValue<Vector2>();
     }
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!context.performed)
+        if (!context.performed || !InputEnabled)
         {
             return;
         }
