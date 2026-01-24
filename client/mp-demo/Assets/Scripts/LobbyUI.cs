@@ -24,6 +24,7 @@ public class LobbyUI : MonoBehaviour
     [Header("General")]
     public Camera lobbyCamera;
     public GameObject pausePanel;
+    public TextMeshProUGUI notificationText;
 
     [Header("Skin Selection")]
     public SkinRegistry skinRegistry;
@@ -65,6 +66,8 @@ public class LobbyUI : MonoBehaviour
         }
 
         UpdateSkinUI();
+
+        if (notificationText != null) notificationText.text = "";
     }
 
     private void Update()
@@ -256,15 +259,29 @@ public class LobbyUI : MonoBehaviour
     private void OnLobbyStateChange(MyRoomState state, bool isFirstState)
     {
         UpdateLobbyUI();
+
+        // If game is already started (late joiner scenario), hide HUD and enable input
+        if (state.isGameStarted && hudPanel.activeSelf)
+        {
+            Debug.Log("LobbyUI: Room is already in-game. Starting for late joiner...");
+            OnGameStarted();
+        }
     }
 
     public async void OnCreateClicked()
     {
         if (createButton != null) createButton.interactable = false;
-        await NetworkManager.Instance.CreateGame();
+        string error = await NetworkManager.Instance.CreateGame();
         
-        // Sync Skin Immediately on Join
-        SaveAndSyncSkin();
+        if (string.IsNullOrEmpty(error))
+        {
+            // Sync Skin Immediately on Join
+            SaveAndSyncSkin();
+        }
+        else
+        {
+            ShowNotification($"Create Failed: {error}");
+        }
         
         if (createButton != null) createButton.interactable = true;
     }
@@ -278,13 +295,26 @@ public class LobbyUI : MonoBehaviour
         }
 
         string code = joinCodeInput.text.Trim();
-        if (string.IsNullOrEmpty(code)) return;
+        if (string.IsNullOrEmpty(code))
+        {
+            ShowNotification("Please enter a room code");
+            return;
+        }
 
         if (joinButton != null) joinButton.interactable = false;
-        await NetworkManager.Instance.JoinGame(code);
+        string error = await NetworkManager.Instance.JoinGame(code);
 
-        // Sync Skin Immediately on Join
-        SaveAndSyncSkin();
+        if (string.IsNullOrEmpty(error))
+        {
+            // Sync Skin Immediately on Join
+            SaveAndSyncSkin();
+        }
+        else
+        {
+            if (error.Contains("full")) ShowNotification("Room is full!");
+            else if (error.Contains("not found")) ShowNotification("Room not found!");
+            else ShowNotification($"Join Failed: {error}");
+        }
 
         if (joinButton != null) joinButton.interactable = true;
     }
@@ -450,6 +480,19 @@ public class LobbyUI : MonoBehaviour
                skinNameText.text = $"Skin {currentSkinIndex + 1}";
            }
        }
+    }
+    public void ShowNotification(string message, float duration = 3f)
+    {
+        if (notificationText == null) return;
+
+        notificationText.text = message;
+        CancelInvoke(nameof(ClearNotification));
+        Invoke(nameof(ClearNotification), duration);
+    }
+
+    private void ClearNotification()
+    {
+        if (notificationText != null) notificationText.text = "";
     }
     #endregion
 }

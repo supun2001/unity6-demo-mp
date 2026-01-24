@@ -53,8 +53,9 @@ export class MyRoom extends Room<MyRoomState> {
         });
 
         if (allReady && this.state.players.size > 0) {
+          this.state.isGameStarted = true;
           this.broadcast("startGame");
-          this.lock();
+          // this.lock(); // Removed lock to allow late joiners
         }
       }
     });
@@ -79,6 +80,11 @@ export class MyRoom extends Room<MyRoomState> {
     const player = new Player();
     player.sessionId = client.sessionId;
 
+    // Late joiners are automatically ready if game already started
+    if (this.state.isGameStarted) {
+      player.isReady = true;
+    }
+
     //Spawn at random position
     player.x = Math.random() * 10 - 5;
     player.y = 0;
@@ -93,6 +99,11 @@ export class MyRoom extends Room<MyRoomState> {
 
     //Remove player from state
     this.state.players.delete(client.sessionId);
+
+    // If no players left, reset game state
+    if (this.state.players.size === 0) {
+      this.state.isGameStarted = false;
+    }
 
     // Unlock the room for late commers 
     this.unlock();

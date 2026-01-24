@@ -17,5 +17,8 @@ public partial class MyRoomState : Schema {
 public MyRoomState() { }
 	[Type(0, "map", typeof(MapSchema<Player>))]
 	public MapSchema<Player> players = null;
+
+	[Type(1, "boolean")]
+	public bool isGameStarted = false;
 }
 

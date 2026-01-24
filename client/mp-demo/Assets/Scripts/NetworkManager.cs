@@ -129,27 +129,33 @@ public class NetworkManager : MonoBehaviour
         room.Send("playerReady", isReady);
     }
 
-    public async Task CreateGame(){
+    public async Task<string> CreateGame(){
         InitializeClient();
         try{
             room = await client.Create<MyRoomState>(roomName);
             OnRoomJoined();
+            return null; // Success
 
         }catch(System.Exception e){
             Debug.LogError($"Matchmaking Failed: {e.Message}");
+            return e.Message;
         }
-        
     }
 
-    public async Task JoinGame(string targetRoomId)
+    public async Task<string> JoinGame(string targetRoomId)
     {
         InitializeClient();
         try
         {
             room = await client.JoinById<MyRoomState>(targetRoomId);
             OnRoomJoined();
+            return null; // Success
         }
-        catch (System.Exception e) { Debug.LogError($"Join Failed: {e.Message}"); }
+        catch (System.Exception e) 
+        { 
+            Debug.LogError($"Join Failed: {e.Message}"); 
+            return e.Message;
+        }
     }
 
     private void InitializeClient()
