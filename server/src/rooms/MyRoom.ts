@@ -93,6 +93,9 @@ export class MyRoom extends Room<MyRoomState> {
 
     //Remove player from state
     this.state.players.delete(client.sessionId);
+
+    // Unlock the room for late commers 
+    this.unlock();
   }
 
   onDispose() {
