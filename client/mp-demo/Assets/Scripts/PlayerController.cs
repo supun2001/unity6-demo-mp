@@ -54,6 +54,8 @@ public class PlayerController : MonoBehaviour
 
     #region Update
     private void Update() {
+        if (!_playerLocomotionInput.InputEnabled) return;
+
         HandleCursorLock();
         HandleVerticalMovement();
         HandleHorizontalMovement();
@@ -66,6 +68,8 @@ public class PlayerController : MonoBehaviour
     
     private void HandleCursorLock()
     {
+        if (!_playerLocomotionInput.InputEnabled) return;
+
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             Cursor.lockState = CursorLockMode.None;

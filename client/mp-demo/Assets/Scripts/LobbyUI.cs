@@ -23,6 +23,7 @@ public class LobbyUI : MonoBehaviour
 
     [Header("General")]
     public Camera lobbyCamera;
+    public GameObject pausePanel;
 
     [Header("Skin Selection")]
     public SkinRegistry skinRegistry;
@@ -58,6 +59,11 @@ public class LobbyUI : MonoBehaviour
         {
             currentSkinIndex = PlayerPrefs.GetInt("SelectedSkin");
         }
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+
         UpdateSkinUI();
     }
 
@@ -77,15 +83,53 @@ public class LobbyUI : MonoBehaviour
                     roomIdText.text = $"Room Code: {NetworkManager.Instance.currentRoomId}";
                 }
             }
-            // Allow ESC to leave ONLY when Game Started (HUD is hidden) and NOT in Menu
+            // Handle Pause Menu toggle on ESC
             else if (!menuPanel.activeSelf) 
             {
                 if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
                 {
-                    LeaveRoom();
+                    TogglePauseMenu();
                 }
             }
         }
+    }
+
+    public void TogglePauseMenu()
+    {
+        if (pausePanel == null) return;
+
+        bool isPaused = !pausePanel.activeSelf;
+        pausePanel.SetActive(isPaused);
+
+        if (isPaused)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            SetLocalPlayerInput(false);
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            SetLocalPlayerInput(true);
+        }
+    }
+
+    public void OnContinueClicked()
+    {
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            SetLocalPlayerInput(true);
+        }
+    }
+
+    public void OnQuitClicked()
+    {
+        if (pausePanel != null) pausePanel.SetActive(false);
+        LeaveRoom();
     }
     
     private void OnDestroy()
